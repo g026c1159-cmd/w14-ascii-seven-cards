@@ -170,8 +170,10 @@ def human_turn(hand, board):
 
 
 
+
+
 def cpu_turn(hand, board, cpu_number):
-    """CPUは出せる札を調べ、あればランダムに1枚出す。"""
+    """CPUは出せる札を調べ、数字の小さい札を優先して出す。"""
     choices = []
     for card in hand:
         if can_play(card, board):
@@ -181,10 +183,11 @@ def cpu_turn(hand, board, cpu_number):
         print("CPU" + str(cpu_number) + "：パス")
         return True
     else:
-        card = random.choice(choices)
+        card = min(choices, key=lambda c: c[1])
         put_card(card, hand, board)
         print("CPU" + str(cpu_number) + "：" + card_name(card) + "を出した")
         return False
+
 
 
 
