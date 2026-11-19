@@ -9,6 +9,7 @@ import random
 
 
 SUITS = ["S", "H", "D", "C"]
+MAX_PASSES = 3
 
 
 def rank_name(rank):
@@ -138,20 +139,21 @@ def read_card(text):
     return (suit, rank)
 
 
+
 def human_turn(hand, board):
     """人間の番。札を置くか、パスする。Qならゲーム終了。"""
     show_board(board)
     show_hand(hand, board)
 
     while True:
-        command = input("出す札（例 S6 / H10 / DA）、P=パス、Q=終了 > ")
+        command = input("出す札（例 S6 / H10 / DA）、P=パス、Q=終了> ")
         command = command.strip().upper()
 
         if command == "Q":
-            return False
+            return False, False
         if command == "P" or command == "PASS":
             print("あなたはパスしました。")
-            return True
+            return True, True
 
         card = read_card(command)
         if card is None:
@@ -163,7 +165,9 @@ def human_turn(hand, board):
         else:
             put_card(card, hand, board)
             print(card_name(card) + " を出しました。")
-            return True
+            return True, False
+
+
 
 
 def cpu_turn(hand, board, cpu_number):
@@ -175,33 +179,51 @@ def cpu_turn(hand, board, cpu_number):
 
     if len(choices) == 0:
         print("CPU" + str(cpu_number) + "：パス")
+        return True
     else:
         card = random.choice(choices)
         put_card(card, hand, board)
-        print("CPU" + str(cpu_number) + "：" + card_name(card) + " を出した")
+        print("CPU" + str(cpu_number) + "：" + card_name(card) + "を出した")
+        return False
+
+
 
 
 def main():
     print("ASCII 七並べ － あなた VS CPU 3人")
     print("各マークの7から左右へ、数字を順番につなげます。")
     print("出せるカードがないときは P でパスできます。")
-    print("今回は初心者向けルール：パス回数に制限なし。最初に手札0枚で勝利！")
+    print("パスは3回目で負けになります。最初に手札0枚で勝利！")
 
     deck = create_deck()
     hands = deal_cards(deck)
     board = create_board()
     turn = 0
+    pass_counts = [0, 0, 0, 0]
 
     while True:
         print("\n------------------------------")
+
         if turn == 0:
             print("あなたの番です。")
-            keep_playing = human_turn(hands[0], board)
+            keep_playing, passed = human_turn(hands[0], board)
+
             if not keep_playing:
                 print("ゲームを終了しました。")
                 break
         else:
-            cpu_turn(hands[turn], board, turn)
+            passed = cpu_turn(hands[turn], board, turn)
+
+        if passed:
+            pass_counts[turn] += 1
+            print("パス回数：" + str(pass_counts[turn]) + "/" + str(MAX_PASSES))
+
+            if pass_counts[turn] >= MAX_PASSES:
+                if turn == 0:
+                    print("パスが3回になりました。あなたの負けです！")
+                else:
+                    print("CPU" + str(turn) + " はパスが3回になり、負けました！")
+                break
 
         if len(hands[turn]) == 0:
             show_board(board)
@@ -212,6 +234,7 @@ def main():
             break
 
         turn = (turn + 1) % 4
+
 
 
 if __name__ == "__main__":
