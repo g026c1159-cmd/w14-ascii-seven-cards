@@ -192,6 +192,7 @@ def cpu_turn(hand, board, cpu_number):
 
 
 
+
 def main():
     print("ASCII 七並べ － あなた VS CPU 3人")
     print("各マークの7から左右へ、数字を順番につなげます。")
@@ -204,16 +205,27 @@ def main():
     turn = 0
     pass_counts = [0, 0, 0, 0]
 
+    total_turns = 0
+    human_cards_played = 0
+    result = "途中終了"
+
     while True:
         print("\n------------------------------")
+        total_turns += 1
 
         if turn == 0:
             print("あなたの番です。")
+            before = len(hands[0])
             keep_playing, passed = human_turn(hands[0], board)
 
             if not keep_playing:
                 print("ゲームを終了しました。")
+                result = "途中終了"
                 break
+
+            if not passed:
+                human_cards_played += before - len(hands[0])
+
         else:
             passed = cpu_turn(hands[turn], board, turn)
 
@@ -224,19 +236,30 @@ def main():
             if pass_counts[turn] >= MAX_PASSES:
                 if turn == 0:
                     print("パスが3回になりました。あなたの負けです！")
+                    result = "負け"
                 else:
                     print("CPU" + str(turn) + " はパスが3回になり、負けました！")
+                    result = "あなたの勝ち"
                 break
 
         if len(hands[turn]) == 0:
             show_board(board)
             if turn == 0:
                 print("おめでとう！ あなたの勝ちです！")
+                result = "勝ち"
             else:
                 print("CPU" + str(turn) + " の勝ちです！")
+                result = "負け"
             break
 
         turn = (turn + 1) % 4
+
+    print("\n===== 戦績記録 =====")
+    print("ゲーム結果：" + result)
+    print("総ターン数：" + str(total_turns))
+    print("あなたが出したカード：" + str(human_cards_played) + "枚")
+    print("あなたのパス回数：" + str(pass_counts[0]) + "回")
+
 
 
 
